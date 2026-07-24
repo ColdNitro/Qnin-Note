@@ -10,13 +10,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun NotesScreen() {
+
     var search by remember { mutableStateOf("") }
-    var count by remember { mutableStateOf(1) }
+    var newNoteTitle by remember { mutableStateOf("") }
 
     val notes = remember {
-        mutableStateListOf(
-            "Welcome to Qnin Note"
-        )
+        mutableStateListOf("Welcome to Qnin Note")
     }
 
     Column(
@@ -35,19 +34,30 @@ fun NotesScreen() {
         OutlinedTextField(
             value = search,
             onValueChange = { search = it },
-            label = { Text("Search notes") },
+            label = { Text("Search") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        OutlinedTextField(
+            value = newNoteTitle,
+            onValueChange = { newNoteTitle = it },
+            label = { Text("New note title") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Button(
             onClick = {
-                count++
-                notes.add("New Note $count")
+                if (newNoteTitle.isNotBlank()) {
+                    notes.add(newNoteTitle)
+                    newNoteTitle = ""
+                }
             }
         ) {
-            Text("New Note")
+            Text("Create Note")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
