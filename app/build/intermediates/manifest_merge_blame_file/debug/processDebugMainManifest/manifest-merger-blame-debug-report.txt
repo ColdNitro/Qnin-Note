@@ -1,0 +1,44 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.qnin.note"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="35" />
+10
+11    <application
+11-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:4:5-22:19
+12        android:allowBackup="true"
+12-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:5:5-31
+13        android:debuggable="true"
+14        android:extractNativeLibs="false"
+15        android:icon="@drawable/qnin_note_icon"
+15-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:7:5-44
+16        android:label="Qnin Note"
+16-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:6:5-30
+17        android:roundIcon="@drawable/qnin_note_icon"
+17-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:8:5-49
+18        android:theme="@style/AppTheme" >
+18-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:9:5-36
+19        <activity
+19-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:11:9-20:20
+20            android:name="com.qnin.note.MainActivity"
+20-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:12:13-41
+21            android:exported="true" >
+21-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:13:13-36
+22            <intent-filter>
+22-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:15:13-18:29
+23                <action android:name="android.intent.action.MAIN" />
+23-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:16:17-69
+23-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:16:25-66
+24
+25                <category android:name="android.intent.category.LAUNCHER" />
+25-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:17:17-77
+25-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:17:27-74
+26            </intent-filter>
+27        </activity>
+28    </application>
+29
+30</manifest>
