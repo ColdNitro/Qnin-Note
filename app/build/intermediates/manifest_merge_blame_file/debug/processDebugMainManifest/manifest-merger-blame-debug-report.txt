@@ -2,7 +2,7 @@
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.qnin.note"
 4    android:versionCode="1"
-5    android:versionName="1.0" >
+5    android:versionName="1.0.3" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="23"
@@ -14,12 +14,12 @@
 12-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:5:5-31
 13        android:debuggable="true"
 14        android:extractNativeLibs="false"
-15        android:icon="@drawable/qnin_note_icon"
-15-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:7:5-44
+15        android:icon="@mipmap/ic_launcher"
+15-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:7:5-39
 16        android:label="Qnin Note"
 16-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:6:5-30
-17        android:roundIcon="@drawable/qnin_note_icon"
-17-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:8:5-49
+17        android:roundIcon="@mipmap/ic_launcher_round"
+17-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:8:5-50
 18        android:theme="@style/AppTheme" >
 18-->/storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:9:5-36
 19        <activity

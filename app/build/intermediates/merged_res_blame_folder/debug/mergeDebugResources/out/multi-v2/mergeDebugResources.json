@@ -4,6 +4,16 @@
             "outputFile": "com.qnin.note.app-debug-4:/values_values.arsc.flat",
             "map": [
                 {
+                    "source": "/storage/emulated/0/Download/QninNote/app/src/main/res/values/icon_colors.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "49",
+                        "endOffsets": "100"
+                    }
+                },
+                {
                     "source": "/storage/emulated/0/Download/QninNote/app/src/main/res/values/styles.xml",
                     "from": {
                         "startLines": "3",
@@ -14,12 +24,36 @@
                         "endOffsets": "378"
                     },
                     "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "105",
+                        "endLines": "8",
+                        "endColumns": "12",
+                        "endOffsets": "427"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "com.qnin.note.app-debug-4:/values-v31_values-v31.arsc.flat",
+            "map": [
+                {
+                    "source": "/storage/emulated/0/Download/QninNote/app/src/main/res/values-v31/styles.xml",
+                    "from": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "56",
+                        "endLines": "14",
+                        "endColumns": "12",
+                        "endOffsets": "673"
+                    },
+                    "to": {
                         "startLines": "2",
                         "startColumns": "4",
                         "startOffsets": "55",
-                        "endLines": "7",
+                        "endLines": "13",
                         "endColumns": "12",
-                        "endOffsets": "377"
+                        "endOffsets": "638"
                     }
                 }
             ]

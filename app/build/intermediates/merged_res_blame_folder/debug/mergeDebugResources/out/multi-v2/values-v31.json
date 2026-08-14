@@ -1,0 +1,28 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.qnin.note.app-mergeDebugResources-2:/values-v31/values-v31.xml",
+            "map": [
+                {
+                    "source": "/storage/emulated/0/Download/QninNote/app/src/main/res/values-v31/styles.xml",
+                    "from": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "56",
+                        "endLines": "14",
+                        "endColumns": "12",
+                        "endOffsets": "673"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "13",
+                        "endColumns": "12",
+                        "endOffsets": "638"
+                    }
+                }
+            ]
+        }
+    ]
+}

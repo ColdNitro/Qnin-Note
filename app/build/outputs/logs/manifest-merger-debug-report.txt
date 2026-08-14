@@ -20,9 +20,9 @@ INJECTED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest
 	android:label
 		ADDED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:6:5-30
 	android:roundIcon
-		ADDED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:8:5-49
+		ADDED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:8:5-50
 	android:icon
-		ADDED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:7:5-44
+		ADDED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:7:5-39
 	android:allowBackup
 		ADDED from /storage/emulated/0/Download/QninNote/app/src/main/AndroidManifest.xml:5:5-31
 	android:theme
