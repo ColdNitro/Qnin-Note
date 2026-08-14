@@ -1,7 +1,0 @@
-com.qnin.note.app-pngs-0 /storage/emulated/0/Download/QninNote/app/build/generated/res/pngs/debug
-com.qnin.note.app-resValues-1 /storage/emulated/0/Download/QninNote/app/build/generated/res/resValues/debug
-com.qnin.note.app-packageDebugResources-2 /storage/emulated/0/Download/QninNote/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-com.qnin.note.app-packageDebugResources-3 /storage/emulated/0/Download/QninNote/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-com.qnin.note.app-debug-4 /storage/emulated/0/Download/QninNote/app/build/intermediates/merged_res/debug/mergeDebugResources
-com.qnin.note.app-debug-5 /storage/emulated/0/Download/QninNote/app/src/debug/res
-com.qnin.note.app-main-6 /storage/emulated/0/Download/QninNote/app/src/main/res
