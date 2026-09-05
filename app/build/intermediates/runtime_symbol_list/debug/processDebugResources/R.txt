@@ -1,0 +1,3 @@
+int drawable qnin_note_icon 0x7f010000
+int drawable settings_icon 0x7f010001
+int style AppTheme 0x7f020000

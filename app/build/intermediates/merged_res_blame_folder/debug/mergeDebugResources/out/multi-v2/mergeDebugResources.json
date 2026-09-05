@@ -1,0 +1,28 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.qnin.note.app-debug-4:/values_values.arsc.flat",
+            "map": [
+                {
+                    "source": "/data/data/com.termux/files/home/QninNote/app/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "17",
+                        "endLines": "8",
+                        "endColumns": "12",
+                        "endOffsets": "402"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "8",
+                        "endColumns": "12",
+                        "endOffsets": "440"
+                    }
+                }
+            ]
+        }
+    ]
+}

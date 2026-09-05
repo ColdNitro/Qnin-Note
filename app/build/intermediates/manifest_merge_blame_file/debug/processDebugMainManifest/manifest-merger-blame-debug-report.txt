@@ -1,0 +1,46 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.qnin.note"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="35" />
+10
+11    <application
+11-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:3:5-22:19
+12        android:allowBackup="true"
+12-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:7:9-35
+13        android:debuggable="true"
+14        android:extractNativeLibs="false"
+15        android:icon="@drawable/qnin_note_icon"
+15-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:6:9-48
+16        android:label="Qnin Note"
+16-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:5:9-34
+17        android:supportsRtl="true"
+17-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:8:9-35
+18        android:theme="@style/AppTheme" >
+18-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:4:9-40
+19        <activity
+19-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:10:9-20:20
+20            android:name="com.qnin.note.MainActivity"
+20-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:11:13-41
+21            android:exported="true"
+21-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:13:13-36
+22            android:screenOrientation="portrait" >
+22-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:12:13-49
+23            <intent-filter>
+23-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:15:13-18:29
+24                <action android:name="android.intent.action.MAIN" />
+24-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:16:17-69
+24-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:16:25-66
+25
+26                <category android:name="android.intent.category.LAUNCHER" />
+26-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:17:17-77
+26-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:17:27-74
+27            </intent-filter>
+28        </activity>
+29    </application>
+30
+31</manifest>
