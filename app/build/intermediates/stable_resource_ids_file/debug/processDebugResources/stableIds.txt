@@ -1,3 +1,5 @@
-com.qnin.note:style/AppTheme = 0x7f020000
-com.qnin.note:drawable/settings_icon = 0x7f010001
-com.qnin.note:drawable/qnin_note_icon = 0x7f010000
+com.qnin.note:drawable/settings_icon = 0x7f010002
+com.qnin.note:mipmap/qnin_note_icon = 0x7f020000
+com.qnin.note:drawable/qnin_note_icon = 0x7f010001
+com.qnin.note:style/AppTheme = 0x7f030000
+com.qnin.note:drawable/qnin_icon_background = 0x7f010000

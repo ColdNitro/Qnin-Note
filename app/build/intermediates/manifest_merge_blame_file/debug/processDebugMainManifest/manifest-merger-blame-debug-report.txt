@@ -14,8 +14,8 @@
 12-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:7:9-35
 13        android:debuggable="true"
 14        android:extractNativeLibs="false"
-15        android:icon="@drawable/qnin_note_icon"
-15-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:6:9-48
+15        android:icon="@mipmap/qnin_note_icon"
+15-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:6:9-46
 16        android:label="Qnin Note"
 16-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:5:9-34
 17        android:supportsRtl="true"

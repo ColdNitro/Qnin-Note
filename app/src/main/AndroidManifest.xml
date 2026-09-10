@@ -3,7 +3,7 @@
     <application
         android:theme="@style/AppTheme"
         android:label="Qnin Note"
-        android:icon="@drawable/qnin_note_icon"
+        android:icon="@mipmap/qnin_note_icon"
         android:allowBackup="true"
         android:supportsRtl="true">
 

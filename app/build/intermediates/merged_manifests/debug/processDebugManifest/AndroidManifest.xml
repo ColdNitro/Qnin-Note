@@ -12,7 +12,7 @@
         android:allowBackup="true"
         android:debuggable="true"
         android:extractNativeLibs="false"
-        android:icon="@drawable/qnin_note_icon"
+        android:icon="@mipmap/qnin_note_icon"
         android:label="Qnin Note"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >

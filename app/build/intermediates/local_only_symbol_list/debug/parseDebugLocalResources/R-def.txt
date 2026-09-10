@@ -1,5 +1,7 @@
 R_DEF: Internal format may change without notice
 local
+drawable qnin_icon_background
 drawable qnin_note_icon
 drawable settings_icon
+mipmap qnin_note_icon
 style AppTheme

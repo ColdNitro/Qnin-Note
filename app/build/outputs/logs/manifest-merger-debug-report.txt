@@ -22,7 +22,7 @@ INJECTED from /data/data/com.termux/files/home/QninNote/app/src/main/AndroidMani
 	android:label
 		ADDED from /data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:5:9-34
 	android:icon
-		ADDED from /data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:6:9-48
+		ADDED from /data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:6:9-46
 	android:allowBackup
 		ADDED from /data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:7:9-35
 	android:theme

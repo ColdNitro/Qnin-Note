@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class MainActivity extends Activity {
+    private boolean darkMode = false;
 
     private LinearLayout noteList;
     private EditText searchBox;
@@ -37,6 +38,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefs =
+                getSharedPreferences("qnin_notes", MODE_PRIVATE);
+        darkMode = prefs.getBoolean("dark_mode", false);
 
         getWindow().setStatusBarColor(PURPLE);
         getWindow().setNavigationBarColor(Color.BLACK);
@@ -86,11 +90,11 @@ public class MainActivity extends Activity {
     private void showMainScreen() {
 
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.WHITE);
+        root.setBackgroundColor(backgroundColor());
 
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setBackgroundColor(Color.WHITE);
+        content.setBackgroundColor(backgroundColor());
 
         // --------------------------------------------------------
         // TOP BAR
@@ -110,7 +114,7 @@ public class MainActivity extends Activity {
         title.setText("Qnin Note");
         title.setTextSize(27);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setTextColor(Color.BLACK);
+        title.setTextColor(primaryTextColor());
 
         toolbar.addView(
                 title,
@@ -124,7 +128,10 @@ public class MainActivity extends Activity {
         ImageView settingsButton = new ImageView(this);
 
         settingsButton.setImageResource(R.drawable.settings_icon);
-settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.PorterDuff.Mode.SRC_IN);
+settingsButton.setColorFilter(
+        darkMode ? Color.WHITE : Color.BLACK,
+        android.graphics.PorterDuff.Mode.SRC_IN
+);
 
         settingsButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
@@ -154,6 +161,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
 
         searchBox = new EditText(this);
         searchBox.setHint("Search notes...");
+        searchBox.setHintTextColor(darkMode ? Color.WHITE : Color.GRAY);
         searchBox.setTextSize(16);
         searchBox.setSingleLine(true);
         searchBox.setPadding(
@@ -164,7 +172,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
         );
 
         GradientDrawable searchBackground = new GradientDrawable();
-        searchBackground.setColor(Color.rgb(245, 245, 247));
+        searchBackground.setColor(surfaceColor());
         searchBackground.setCornerRadius(dp(14));
 
         searchBox.setBackground(searchBackground);
@@ -351,7 +359,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
             );
 
             empty.setTextSize(18);
-            empty.setTextColor(Color.GRAY);
+            empty.setTextColor(secondaryTextColor());
             empty.setGravity(Gravity.CENTER);
 
             noteList.addView(
@@ -411,13 +419,13 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
         title.setText(displayTitle);
         title.setTextSize(20);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setTextColor(Color.BLACK);
+        title.setTextColor(primaryTextColor());
 
         TextView body = new TextView(this);
 
         body.setText(note.body);
         body.setTextSize(16);
-        body.setTextColor(Color.DKGRAY);
+        body.setTextColor(secondaryTextColor());
         body.setMaxLines(4);
         body.setEllipsize(
                 android.text.TextUtils.TruncateAt.END
@@ -461,7 +469,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.WHITE);
+        root.setBackgroundColor(backgroundColor());
 
         // --------------------------------------------------------
         // EDITOR TOOLBAR
@@ -490,7 +498,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
         GradientDrawable backBackground =
                 new GradientDrawable();
 
-        backBackground.setColor(SOFT_PURPLE);
+        backBackground.setColor(softColor());
         backBackground.setCornerRadius(dp(24));
 
         back.setBackground(backBackground);
@@ -519,7 +527,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
                 Typeface.DEFAULT,
                 Typeface.BOLD
         );
-        heading.setTextColor(Color.BLACK);
+        heading.setTextColor(primaryTextColor());
 
         LinearLayout.LayoutParams headingParams =
                 new LinearLayout.LayoutParams(
@@ -547,6 +555,14 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
 
         titleInput.setHint("Title");
         titleInput.setText(note.title);
+        titleInput.setTextColor(primaryTextColor());
+
+        titleInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
         titleInput.setTextSize(23);
         titleInput.setSingleLine(true);
         titleInput.setPadding(
@@ -572,6 +588,14 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
 
         bodyInput.setHint("Write your note...");
         bodyInput.setText(note.body);
+        bodyInput.setTextColor(primaryTextColor());
+
+        bodyInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
         bodyInput.setTextSize(18);
         bodyInput.setGravity(
                 Gravity.TOP | Gravity.START
@@ -588,6 +612,22 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
                 android.text.InputType.TYPE_CLASS_TEXT
                         | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
                         | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        );
+
+        // Apply colors after input configuration so Android
+        // does not reset them.
+        titleInput.setTextColor(primaryTextColor());
+        titleInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
+        bodyInput.setTextColor(primaryTextColor());
+        bodyInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
         );
 
         root.addView(
@@ -768,7 +808,7 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
 
         item.setText(text);
         item.setTextSize(17);
-        item.setTextColor(Color.BLACK);
+        item.setTextColor(primaryTextColor());
         item.setGravity(Gravity.CENTER_VERTICAL);
 
         item.setPadding(
@@ -1004,6 +1044,32 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
         }
     }
 
+    // ============================================================
+    // DARK MODE COLORS
+    // ============================================================
+
+    private int backgroundColor() {
+        return darkMode ? Color.rgb(18, 18, 20) : Color.WHITE;
+    }
+
+    private int primaryTextColor() {
+        return darkMode ? Color.WHITE : Color.BLACK;
+    }
+
+    private int secondaryTextColor() {
+        return darkMode ? Color.rgb(190, 190, 195) : Color.DKGRAY;
+    }
+
+    private int surfaceColor() {
+        return darkMode ? Color.rgb(30, 30, 33) : Color.rgb(245, 245, 247);
+    }
+
+    private int softColor() {
+        return darkMode
+                ? Color.rgb(45, 45, 48)
+                : Color.rgb(245, 242, 248);
+    }
+
     private int dp(int value) {
         return (int) (
                 value
@@ -1023,7 +1089,6 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-
         layout.setPadding(
                 dp(24),
                 dp(24),
@@ -1035,45 +1100,108 @@ settingsButton.setColorFilter(android.graphics.Color.BLACK, android.graphics.Por
         title.setText("Settings");
         title.setTextSize(24);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setTextColor(Color.BLACK);
-
+        title.setTextColor(darkMode ? Color.WHITE : Color.BLACK);
         layout.addView(title);
 
-        TextView info = new TextView(this);
-        info.setText("More settings will be added here.");
-        info.setTextSize(16);
-        info.setTextColor(Color.DKGRAY);
+        Switch darkSwitch = new Switch(this);
+        darkSwitch.setText("Dark mode");
+        darkSwitch.setTextSize(17);
+        darkSwitch.setTextColor(darkMode ? Color.WHITE : Color.BLACK);
+        darkSwitch.setChecked(darkMode);
 
-        LinearLayout.LayoutParams infoParams =
+        LinearLayout.LayoutParams switchParams =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        infoParams.setMargins(
+        switchParams.setMargins(
                 0,
                 dp(24),
                 0,
-                dp(24)
+                dp(16)
         );
 
-        layout.addView(info, infoParams);
+        layout.addView(darkSwitch, switchParams);
+
+        TextView info = new TextView(this);
+        info.setText("Choose the appearance of Qnin Note.");
+        info.setTextSize(16);
+        info.setTextColor(
+                darkMode ? Color.rgb(190, 190, 190) : Color.DKGRAY
+        );
+
+        layout.addView(info);
 
         Button closeButton = new Button(this);
         closeButton.setText("Close");
+        closeButton.setTextColor(darkMode ? Color.WHITE : Color.BLACK);
 
-        layout.addView(closeButton);
+        GradientDrawable closeBackground = new GradientDrawable();
+        closeBackground.setColor(
+                darkMode
+                        ? Color.rgb(45, 45, 48)
+                        : Color.rgb(245, 245, 247)
+        );
+        closeBackground.setCornerRadius(dp(4));
+        closeButton.setBackground(closeBackground);
+
+        LinearLayout.LayoutParams closeParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        closeParams.setMargins(
+                0,
+                dp(24),
+                0,
+                0
+        );
+
+        layout.addView(closeButton, closeParams);
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
                         .setView(layout)
                         .create();
 
+        darkSwitch.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
+                    darkMode = isChecked;
+
+                    prefs.edit()
+                            .putBoolean("dark_mode", darkMode)
+                            .apply();
+
+                    dialog.dismiss();
+                    showMainScreen();
+                }
+        );
+
         closeButton.setOnClickListener(
                 v -> dialog.dismiss()
         );
 
+        dialog.setOnShowListener(d -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new android.graphics.drawable.ColorDrawable(
+                                backgroundColor()
+                        )
+                );
+            }
+        });
+
         dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(
+                            backgroundColor()
+                    )
+            );
+        }
     }
 
 }
