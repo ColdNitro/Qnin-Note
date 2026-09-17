@@ -6,7 +6,7 @@
         android:icon="@mipmap/qnin_note_icon"
         android:allowBackup="true"
         android:supportsRtl="true">
-
+        <activity android:name=".LockActivity" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"

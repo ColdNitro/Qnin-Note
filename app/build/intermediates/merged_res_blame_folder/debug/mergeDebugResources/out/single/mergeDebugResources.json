@@ -4,19 +4,75 @@
         "source": "com.qnin.note.app-main-6:/mipmap/qnin_note_icon.png"
     },
     {
+        "merged": "com.qnin.note.app-debug-4:/drawable_bg_icon_circle.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/bg_icon_circle.xml"
+    },
+    {
         "merged": "com.qnin.note.app-debug-4:/drawable_settings_icon.png.flat",
         "source": "com.qnin.note.app-main-6:/drawable/settings_icon.png"
     },
     {
-        "merged": "com.qnin.note.app-debug-4:/mipmap-anydpi-v26_qnin_note_icon.xml.flat",
-        "source": "com.qnin.note.app-main-6:/mipmap-anydpi-v26/qnin_note_icon.xml"
+        "merged": "com.qnin.note.app-debug-4:/layout_dialog_change_password.xml.flat",
+        "source": "com.qnin.note.app-main-6:/layout/dialog_change_password.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_swap_arrows.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_swap_arrows.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_bg_button_purple.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/bg_button_purple.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_eye_off.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_eye_off.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_shield_plus.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_shield_plus.xml"
     },
     {
         "merged": "com.qnin.note.app-debug-4:/drawable_qnin_note_icon.png.flat",
         "source": "com.qnin.note.app-main-6:/drawable/qnin_note_icon.png"
     },
     {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_lock_closed.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_lock_closed.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_bg_dialog_card.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/bg_dialog_card.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/layout_dialog_enable_password.xml.flat",
+        "source": "com.qnin.note.app-main-6:/layout/dialog_enable_password.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/mipmap-anydpi-v26_qnin_note_icon.xml.flat",
+        "source": "com.qnin.note.app-main-6:/mipmap-anydpi-v26/qnin_note_icon.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/layout_activity_lock.xml.flat",
+        "source": "com.qnin.note.app-main-6:/layout/activity_lock.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_bg_input_field.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/bg_input_field.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_check_circle.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_check_circle.xml"
+    },
+    {
         "merged": "com.qnin.note.app-debug-4:/drawable_qnin_icon_background.xml.flat",
         "source": "com.qnin.note.app-main-6:/drawable/qnin_icon_background.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/layout_dialog_disable_password.xml.flat",
+        "source": "com.qnin.note.app-main-6:/layout/dialog_disable_password.xml"
+    },
+    {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_eye.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_eye.xml"
     }
 ]

@@ -4,6 +4,23 @@
             "outputFile": "com.qnin.note.app-debug-4:/values_values.arsc.flat",
             "map": [
                 {
+                    "source": "/data/data/com.termux/files/home/QninNote/app/src/main/res/values/lock_colors.xml",
+                    "from": {
+                        "startLines": "1,9,6,5,4,2,3,7,8",
+                        "startColumns": "4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "16,393,251,204,155,58,107,297,344",
+                        "endColumns": "41,41,45,46,48,48,47,46,48",
+                        "endOffsets": "53,430,292,246,199,102,150,339,388"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,9,10",
+                        "startColumns": "4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,97,139,185,232,281,330,378,425",
+                        "endColumns": "41,41,45,46,48,48,47,46,48",
+                        "endOffsets": "92,134,180,227,276,325,373,420,469"
+                    }
+                },
+                {
                     "source": "/data/data/com.termux/files/home/QninNote/app/src/main/res/values/styles.xml",
                     "from": {
                         "startLines": "2",
@@ -11,15 +28,15 @@
                         "startOffsets": "17",
                         "endLines": "8",
                         "endColumns": "12",
-                        "endOffsets": "402"
+                        "endOffsets": "403"
                     },
                     "to": {
-                        "startLines": "2",
+                        "startLines": "11",
                         "startColumns": "4",
-                        "startOffsets": "55",
-                        "endLines": "8",
+                        "startOffsets": "474",
+                        "endLines": "17",
                         "endColumns": "12",
-                        "endOffsets": "440"
+                        "endOffsets": "860"
                     }
                 }
             ]

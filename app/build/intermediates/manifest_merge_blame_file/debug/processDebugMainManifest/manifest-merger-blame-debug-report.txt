@@ -22,25 +22,28 @@
 17-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:8:9-35
 18        android:theme="@style/AppTheme" >
 18-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:4:9-40
-19        <activity
-19-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:10:9-20:20
-20            android:name="com.qnin.note.MainActivity"
-20-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:11:13-41
-21            android:exported="true"
-21-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:13:13-36
-22            android:screenOrientation="portrait" >
-22-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:12:13-49
-23            <intent-filter>
-23-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:15:13-18:29
-24                <action android:name="android.intent.action.MAIN" />
-24-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:16:17-69
-24-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:16:25-66
-25
-26                <category android:name="android.intent.category.LAUNCHER" />
-26-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:17:17-77
-26-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:17:27-74
-27            </intent-filter>
-28        </activity>
-29    </application>
-30
-31</manifest>
+19        <activity android:name="com.qnin.note.LockActivity" />
+19-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:9:9-50
+19-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:9:19-47
+20        <activity
+20-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:10:9-20:20
+21            android:name="com.qnin.note.MainActivity"
+21-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:11:13-41
+22            android:exported="true"
+22-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:13:13-36
+23            android:screenOrientation="portrait" >
+23-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:12:13-49
+24            <intent-filter>
+24-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:15:13-18:29
+25                <action android:name="android.intent.action.MAIN" />
+25-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:16:17-69
+25-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:16:25-66
+26
+27                <category android:name="android.intent.category.LAUNCHER" />
+27-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:17:17-77
+27-->/data/data/com.termux/files/home/QninNote/app/src/main/AndroidManifest.xml:17:27-74
+28            </intent-filter>
+29        </activity>
+30    </application>
+31
+32</manifest>

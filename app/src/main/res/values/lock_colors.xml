@@ -1,0 +1,11 @@
+<resources>
+    <color name="bg_deep">#0B0912</color>
+    <color name="surface_dialog">#17131F</color>
+    <color name="surface_input">#1E1930</color>
+    <color name="purple_primary">#7C5CFA</color>
+    <color name="purple_light">#9B82FF</color>
+    <color name="purple_glow">#4A3B80</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A79FBD</color>
+    <color name="divider">#2A2438</color>
+</resources>

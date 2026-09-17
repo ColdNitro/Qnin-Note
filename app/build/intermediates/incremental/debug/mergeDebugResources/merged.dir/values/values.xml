@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="bg_deep">#0B0912</color>
+    <color name="divider">#2A2438</color>
+    <color name="purple_glow">#4A3B80</color>
+    <color name="purple_light">#9B82FF</color>
+    <color name="purple_primary">#7C5CFA</color>
+    <color name="surface_dialog">#17131F</color>
+    <color name="surface_input">#1E1930</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A79FBD</color>
     <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#6750A4</item>
         <item name="android:navigationBarColor">#2D2D2D</item>
-        <item name="android:statusBarColor">#FFFFFF</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">#101014</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

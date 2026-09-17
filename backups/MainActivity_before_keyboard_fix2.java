@@ -1,0 +1,2204 @@
+package com.qnin.note;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.os.Bundle;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
+import android.text.Editable;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.*;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class MainActivity extends Activity {
+    private boolean darkMode = false;
+    private boolean appUnlocked = false;
+
+    private LinearLayout noteList;
+    private EditText searchBox;
+    private SharedPreferences prefs;
+
+    private final ArrayList<Note> notes = new ArrayList<>();
+
+    private static final int PURPLE = Color.rgb(103, 80, 164);
+    private static final int LIGHT_PURPLE = Color.rgb(245, 242, 248);
+    private static final int SOFT_PURPLE = Color.rgb(243, 238, 250);
+
+    private Note deletedNote = null;
+    private int deletedIndex = -1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        prefs =
+                getSharedPreferences("qnin_notes", MODE_PRIVATE);
+        darkMode = prefs.getBoolean("dark_mode", false);
+
+        getWindow().setStatusBarColor(PURPLE);
+        getWindow().setNavigationBarColor(Color.BLACK);
+
+        prefs = getSharedPreferences("qnin_notes", MODE_PRIVATE);
+
+        loadNotes();
+
+        if (isPasswordEnabled()) {
+            appUnlocked = false;
+            showPasswordUnlockDialog();
+        } else {
+            appUnlocked = true;
+            showMainScreen();
+        }
+    }
+
+    // ============================================================
+    // SYSTEM BAR INSETS
+    // ============================================================
+
+    private void applySystemInsets(View view) {
+        view.setOnApplyWindowInsetsListener((v, insets) -> {
+
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                android.view.WindowInsets wi = insets;
+
+                int top = wi.getInsets(
+                        android.view.WindowInsets.Type.statusBars()
+                ).top;
+
+                int bottom = wi.getInsets(
+                        android.view.WindowInsets.Type.navigationBars()
+                ).bottom;
+
+                v.setPadding(
+                        v.getPaddingLeft(),
+                        top,
+                        v.getPaddingRight(),
+                        bottom
+                );
+            }
+
+            return insets;
+        });
+
+        view.requestApplyInsets();
+    }
+
+    // ============================================================
+    // MAIN SCREEN
+    // ============================================================
+
+    private void showMainScreen() {
+
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(backgroundColor());
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setBackgroundColor(backgroundColor());
+
+        // --------------------------------------------------------
+        // TOP BAR
+        // --------------------------------------------------------
+
+        LinearLayout toolbar = new LinearLayout(this);
+        toolbar.setOrientation(LinearLayout.HORIZONTAL);
+        toolbar.setGravity(Gravity.CENTER_VERTICAL);
+        toolbar.setPadding(
+                dp(20),
+                dp(12),
+                dp(20),
+                dp(8)
+        );
+
+        TextView title = new TextView(this);
+        title.setText("Qnin Note");
+        title.setTextSize(27);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setTextColor(primaryTextColor());
+
+        toolbar.addView(
+                title,
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1
+                )
+        );
+
+        ImageView settingsButton = new ImageView(this);
+
+        settingsButton.setImageResource(R.drawable.settings_icon);
+settingsButton.setColorFilter(
+        darkMode ? Color.WHITE : Color.BLACK,
+        android.graphics.PorterDuff.Mode.SRC_IN
+);
+
+        settingsButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+        settingsButton.setPadding(
+                dp(8),
+                dp(8),
+                dp(8),
+                dp(8)
+        );
+
+        settingsButton.setOnClickListener(
+                v -> showSettings()
+        );
+
+        toolbar.addView(
+                settingsButton,
+                new LinearLayout.LayoutParams(
+                        dp(48),
+                        dp(48)
+                )
+        );
+        content.addView(toolbar);
+
+        // --------------------------------------------------------
+        // SEARCH
+        // --------------------------------------------------------
+
+        searchBox = new EditText(this);
+        searchBox.setHint("Search notes...");
+        searchBox.setHintTextColor(darkMode ? Color.WHITE : Color.GRAY);
+        searchBox.setTextSize(16);
+        searchBox.setSingleLine(true);
+        searchBox.setPadding(
+                dp(18),
+                0,
+                dp(18),
+                0
+        );
+
+        GradientDrawable searchBackground = new GradientDrawable();
+        searchBackground.setColor(surfaceColor());
+        searchBackground.setCornerRadius(dp(14));
+
+        searchBox.setBackground(searchBackground);
+
+        LinearLayout.LayoutParams searchParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(52)
+                );
+
+        searchParams.setMargins(
+                dp(20),
+                dp(8),
+                dp(20),
+                dp(14)
+        );
+
+        content.addView(searchBox, searchParams);
+
+        searchBox.addTextChangedListener(new SimpleTextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                displayNotes(s.toString());
+            }
+        });
+
+        // --------------------------------------------------------
+        // NOTE LIST
+        // --------------------------------------------------------
+
+        ScrollView scroll = new ScrollView(this);
+
+        noteList = new LinearLayout(this);
+        noteList.setOrientation(LinearLayout.VERTICAL);
+
+        noteList.setPadding(
+                dp(20),
+                dp(4),
+                dp(20),
+                dp(110)
+        );
+
+        scroll.addView(noteList);
+
+        content.addView(
+                scroll,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        0,
+                        1
+                )
+        );
+
+        root.addView(
+                content,
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+
+        // --------------------------------------------------------
+        // LOWER FLOATING ADD BUTTON
+        // --------------------------------------------------------
+
+        TextView addButton = new TextView(this);
+        addButton.setText("+");
+        addButton.setTextSize(27);
+        addButton.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        addButton.setTextColor(Color.WHITE);
+        addButton.setGravity(Gravity.CENTER);
+        addButton.setClickable(true);
+        addButton.setFocusable(true);
+
+        GradientDrawable addBackground = new GradientDrawable();
+        addBackground.setColor(PURPLE);
+        addBackground.setCornerRadius(dp(28));
+
+        addButton.setBackground(addBackground);
+        addButton.setElevation(dp(8));
+
+        addButton.setOnClickListener(v -> showEditor(-1));
+
+        FrameLayout.LayoutParams addParams =
+                new FrameLayout.LayoutParams(
+                        dp(58),
+                        dp(58),
+                        Gravity.BOTTOM | Gravity.END
+                );
+
+        addParams.setMargins(
+                0,
+                0,
+                dp(20),
+                dp(24)
+        );
+
+        root.addView(addButton, addParams);
+
+        // Move the FAB above the navigation bar.
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+
+                int top = insets.getInsets(
+                        android.view.WindowInsets.Type.statusBars()
+                ).top;
+
+                int bottom = insets.getInsets(
+                        android.view.WindowInsets.Type.navigationBars()
+                ).bottom;
+
+                content.setPadding(
+                        content.getPaddingLeft(),
+                        top,
+                        content.getPaddingRight(),
+                        0
+                );
+
+                FrameLayout.LayoutParams lp =
+                        (FrameLayout.LayoutParams)
+                                addButton.getLayoutParams();
+
+                lp.bottomMargin = bottom + dp(20);
+
+                addButton.setLayoutParams(lp);
+            }
+
+            return insets;
+        });
+
+        setContentView(root);
+
+        root.requestApplyInsets();
+
+        displayNotes("");
+    }
+
+    // ============================================================
+    // DISPLAY NOTES
+    // ============================================================
+
+    private void displayNotes(String query) {
+
+        if (noteList == null) {
+            return;
+        }
+
+        noteList.removeAllViews();
+
+        String q = query == null
+                ? ""
+                : query.trim().toLowerCase();
+
+        ArrayList<Note> filtered = new ArrayList<>();
+
+        for (Note note : notes) {
+
+            if (q.isEmpty()
+                    || note.title.toLowerCase().contains(q)
+                    || note.body.toLowerCase().contains(q)) {
+
+                filtered.add(note);
+            }
+        }
+
+        Collections.sort(filtered, (a, b) -> {
+
+            if (a.pinned != b.pinned) {
+                return a.pinned ? -1 : 1;
+            }
+
+            return Long.compare(b.time, a.time);
+        });
+
+        if (filtered.isEmpty()) {
+
+            TextView empty = new TextView(this);
+
+            empty.setText(
+                    q.isEmpty()
+                            ? "No notes yet"
+                            : "No matching notes"
+            );
+
+            empty.setTextSize(18);
+            empty.setTextColor(secondaryTextColor());
+            empty.setGravity(Gravity.CENTER);
+
+            noteList.addView(
+                    empty,
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            dp(300)
+                    )
+            );
+
+            return;
+        }
+
+        for (Note note : filtered) {
+            addNoteView(note);
+        }
+    }
+
+    // ============================================================
+    // NOTE CARD
+    // ============================================================
+
+    private void addNoteView(Note note) {
+
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(
+                dp(18),
+                dp(16),
+                dp(18),
+                dp(16)
+        );
+
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(
+        darkMode
+                ? Color.rgb(28, 24, 40)
+                : LIGHT_PURPLE
+);
+
+        card.setBackground(background);
+        card.setClickable(true);
+
+        LinearLayout.LayoutParams cardParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        cardParams.setMargins(0, 0, 0, dp(14));
+
+        TextView title = new TextView(this);
+
+        String displayTitle = note.title;
+
+        if (note.pinned) {
+            displayTitle = "📌 " + displayTitle;
+        }
+
+        title.setText(displayTitle);
+        title.setTextSize(20);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setTextColor(primaryTextColor());
+
+        TextView body = new TextView(this);
+
+        body.setText(note.body);
+        body.setTextSize(16);
+        body.setTextColor(secondaryTextColor());
+        body.setMaxLines(4);
+        body.setEllipsize(
+                android.text.TextUtils.TruncateAt.END
+        );
+
+        body.setPadding(0, dp(8), 0, 0);
+
+        card.addView(title);
+
+        if (!note.body.isEmpty()) {
+            card.addView(body);
+        }
+
+        card.setOnClickListener(
+                v -> showEditor(notes.indexOf(note))
+        );
+
+        card.setOnLongClickListener(v -> {
+            showNoteMenu(note);
+            return true;
+        });
+
+        noteList.addView(card, cardParams);
+    }
+
+    // ============================================================
+    // EDITOR
+    // ============================================================
+
+    private void showEditor(int index) {
+
+        final boolean editing = index >= 0;
+
+        final Note note;
+
+        if (editing) {
+            note = notes.get(index);
+        } else {
+            note = new Note();
+        }
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(backgroundColor());
+
+        // --------------------------------------------------------
+        // EDITOR TOOLBAR
+        // --------------------------------------------------------
+
+        LinearLayout toolbar = new LinearLayout(this);
+        toolbar.setOrientation(LinearLayout.HORIZONTAL);
+        toolbar.setGravity(Gravity.CENTER_VERTICAL);
+        toolbar.setPadding(
+                dp(16),
+                dp(10),
+                dp(16),
+                dp(10)
+        );
+
+        // Modern circular back button.
+        TextView back = new TextView(this);
+        back.setText("←");
+        back.setTextSize(27);
+        back.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        back.setTextColor(PURPLE);
+        back.setGravity(Gravity.CENTER);
+        back.setClickable(true);
+        back.setFocusable(true);
+
+        GradientDrawable backBackground =
+                new GradientDrawable();
+
+        backBackground.setColor(softColor());
+        backBackground.setCornerRadius(dp(24));
+
+        back.setBackground(backBackground);
+        back.setElevation(dp(2));
+
+        back.setOnClickListener(v -> showMainScreen());
+
+        toolbar.addView(
+                back,
+                new LinearLayout.LayoutParams(
+                        dp(48),
+                        dp(48)
+                )
+        );
+
+        TextView heading = new TextView(this);
+
+        heading.setText(
+                editing
+                        ? "Edit Note"
+                        : "New Note"
+        );
+
+        heading.setTextSize(22);
+        heading.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+        heading.setTextColor(primaryTextColor());
+
+        LinearLayout.LayoutParams headingParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1
+                );
+
+        headingParams.setMargins(
+                dp(12),
+                0,
+                0,
+                0
+        );
+
+        toolbar.addView(heading, headingParams);
+
+        root.addView(toolbar);
+
+        // --------------------------------------------------------
+        // TITLE INPUT
+        // --------------------------------------------------------
+
+        EditText titleInput = new EditText(this);
+
+        titleInput.setHint("Title");
+        titleInput.setText(note.title);
+        titleInput.setTextColor(primaryTextColor());
+
+        titleInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
+        titleInput.setTextSize(23);
+        titleInput.setSingleLine(true);
+        titleInput.setPadding(
+                dp(16),
+                dp(8),
+                dp(16),
+                dp(8)
+        );
+
+        root.addView(
+                titleInput,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(65)
+                )
+        );
+
+        // --------------------------------------------------------
+        // BODY INPUT
+        // --------------------------------------------------------
+
+        EditText bodyInput = new EditText(this);
+
+        bodyInput.setHint("Write your note...");
+        bodyInput.setText(note.body);
+        bodyInput.setTextColor(primaryTextColor());
+
+        bodyInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
+        bodyInput.setTextSize(18);
+        bodyInput.setGravity(
+                Gravity.TOP | Gravity.START
+        );
+
+        bodyInput.setPadding(
+                dp(16),
+                dp(12),
+                dp(16),
+                dp(12)
+        );
+
+        bodyInput.setInputType(
+                android.text.InputType.TYPE_CLASS_TEXT
+                        | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                        | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        );
+
+        // Apply colors after input configuration so Android
+        // does not reset them.
+        titleInput.setTextColor(primaryTextColor());
+        titleInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
+        bodyInput.setTextColor(primaryTextColor());
+        bodyInput.setHintTextColor(
+                darkMode
+                        ? Color.rgb(180, 180, 185)
+                        : Color.GRAY
+        );
+
+        root.addView(
+                bodyInput,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        0,
+                        1
+                )
+        );
+
+        // --------------------------------------------------------
+        // SAVE BUTTON
+        // --------------------------------------------------------
+
+        TextView saveButton = new TextView(this);
+
+        saveButton.setText("Save");
+        saveButton.setTextSize(18);
+        saveButton.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+        saveButton.setTextColor(Color.WHITE);
+        saveButton.setGravity(Gravity.CENTER);
+        saveButton.setClickable(true);
+        saveButton.setFocusable(true);
+
+        GradientDrawable saveBackground =
+                new GradientDrawable();
+
+        saveBackground.setColor(PURPLE);
+        saveBackground.setCornerRadius(dp(16));
+
+        saveButton.setBackground(saveBackground);
+        saveButton.setElevation(dp(2));
+
+        saveButton.setOnClickListener(v -> {
+
+            note.title =
+                    titleInput
+                            .getText()
+                            .toString()
+                            .trim();
+
+            if (note.title.isEmpty()) {
+                note.title = "Untitled";
+            }
+
+            note.body =
+                    bodyInput
+                            .getText()
+                            .toString();
+
+            note.time =
+                    System.currentTimeMillis();
+
+            if (!editing) {
+                notes.add(note);
+            }
+
+            saveNotes();
+            showMainScreen();
+        });
+
+        LinearLayout.LayoutParams saveParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(56)
+                );
+
+        saveParams.setMargins(
+                dp(20),
+                dp(10),
+                dp(20),
+                dp(14)
+        );
+
+        root.addView(saveButton, saveParams);
+
+        // Keep the entire editor below the status bar and
+        // keep Save safely above the navigation/task bar.
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+
+                int top = insets.getInsets(
+                        android.view.WindowInsets.Type.statusBars()
+                ).top;
+
+                int bottom = insets.getInsets(
+                        android.view.WindowInsets.Type.navigationBars()
+                ).bottom;
+
+                toolbar.setPadding(
+                        toolbar.getPaddingLeft(),
+                        dp(10) + top,
+                        toolbar.getPaddingRight(),
+                        dp(10)
+                );
+
+                LinearLayout.LayoutParams lp =
+                        (LinearLayout.LayoutParams)
+                                saveButton.getLayoutParams();
+
+                lp.bottomMargin = bottom + dp(14);
+
+                saveButton.setLayoutParams(lp);
+            }
+
+            return insets;
+        });
+
+        setContentView(root);
+
+        root.requestApplyInsets();
+    }
+
+    // ============================================================
+    // NOTE MENU
+    // ============================================================
+
+    private void showNoteMenu(Note note) {
+
+        LinearLayout menu = new LinearLayout(this);
+        menu.setOrientation(LinearLayout.VERTICAL);
+        menu.setPadding(
+                dp(8),
+                dp(8),
+                dp(8),
+                dp(8)
+        );
+
+        TextView pin = createMenuItem(
+                note.pinned ? "📌  Unpin note" : "📌  Pin note"
+        );
+
+        TextView delete = createMenuItem(
+                "🗑  Delete note"
+        );
+
+        menu.addView(pin);
+        menu.addView(delete);
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(note.title)
+                        .setView(menu)
+                        .create();
+
+        pin.setOnClickListener(v -> {
+
+            note.pinned = !note.pinned;
+
+            saveNotes();
+
+            dialog.dismiss();
+
+            displayNotes(
+                    searchBox == null
+                            ? ""
+                            : searchBox.getText().toString()
+            );
+        });
+
+        delete.setOnClickListener(v -> {
+
+            dialog.dismiss();
+            deleteNoteWithUndo(note);
+        });
+
+        dialog.show();
+    }
+
+    private TextView createMenuItem(String text) {
+
+        TextView item = new TextView(this);
+
+        item.setText(text);
+        item.setTextSize(17);
+        item.setTextColor(primaryTextColor());
+        item.setGravity(Gravity.CENTER_VERTICAL);
+
+        item.setPadding(
+                dp(16),
+                dp(15),
+                dp(16),
+                dp(15)
+        );
+
+        GradientDrawable bg =
+                new GradientDrawable();
+
+        bg.setColor(Color.rgb(248, 247, 250));
+        bg.setCornerRadius(dp(14));
+
+        item.setBackground(bg);
+        item.setClickable(true);
+
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(54)
+                );
+
+        params.setMargins(
+                dp(4),
+                dp(4),
+                dp(4),
+                dp(4)
+        );
+
+        item.setLayoutParams(params);
+
+        return item;
+    }
+
+    // ============================================================
+    // DELETE + UNDO
+    // ============================================================
+
+    private void deleteNoteWithUndo(Note note) {
+
+        deletedIndex = notes.indexOf(note);
+        deletedNote = note;
+
+        if (deletedIndex >= 0) {
+            notes.remove(deletedIndex);
+        }
+
+        saveNotes();
+
+        String currentSearch =
+                searchBox == null
+                        ? ""
+                        : searchBox.getText().toString();
+
+        displayNotes(currentSearch);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Note deleted")
+                .setMessage("The note was deleted.")
+                .setNegativeButton("OK", null)
+                .setPositiveButton(
+                        "UNDO",
+                        (dialog, which) -> {
+
+                            if (deletedNote != null) {
+
+                                int position = deletedIndex;
+
+                                if (position < 0
+                                        || position > notes.size()) {
+                                    position = notes.size();
+                                }
+
+                                notes.add(
+                                        position,
+                                        deletedNote
+                                );
+
+                                saveNotes();
+
+                                displayNotes(
+                                        searchBox == null
+                                                ? ""
+                                                : searchBox
+                                                        .getText()
+                                                        .toString()
+                                );
+
+                                deletedNote = null;
+                                deletedIndex = -1;
+                            }
+                        }
+                )
+                .show();
+    }
+
+    // ============================================================
+    // SAVE NOTES
+    // ============================================================
+
+    private void saveNotes() {
+
+        JSONArray array = new JSONArray();
+
+        try {
+
+            for (Note note : notes) {
+
+                JSONObject obj = new JSONObject();
+
+                obj.put("title", note.title);
+                obj.put("body", note.body);
+                obj.put("pinned", note.pinned);
+                obj.put("time", note.time);
+
+                array.put(obj);
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        prefs.edit()
+                .putString("notes", array.toString())
+                .apply();
+    }
+
+    // ============================================================
+    // LOAD NOTES
+    // ============================================================
+
+    private void loadNotes() {
+
+        String data = prefs.getString(
+                "notes",
+                "[]"
+        );
+
+        try {
+
+            JSONArray array =
+                    new JSONArray(data);
+
+            for (int i = 0; i < array.length(); i++) {
+
+                JSONObject obj =
+                        array.getJSONObject(i);
+
+                Note n = new Note();
+
+                n.title = obj.optString(
+                        "title",
+                        ""
+                );
+
+                n.body = obj.optString(
+                        "body",
+                        ""
+                );
+
+                n.pinned = obj.optBoolean(
+                        "pinned",
+                        false
+                );
+
+                n.time = obj.optLong(
+                        "time",
+                        System.currentTimeMillis()
+                );
+
+                notes.add(n);
+            }
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    // ============================================================
+    // DATA CLASSES / HELPERS
+    // ============================================================
+
+    private static class Note {
+
+        String title = "";
+        String body = "";
+        boolean pinned = false;
+        long time = System.currentTimeMillis();
+    }
+
+    private static abstract class SimpleTextWatcher
+            implements android.text.TextWatcher {
+
+        @Override
+        public void beforeTextChanged(
+                CharSequence s,
+                int start,
+                int count,
+                int after
+        ) {
+        }
+
+        @Override
+        public void onTextChanged(
+                CharSequence s,
+                int start,
+                int before,
+                int count
+        ) {
+        }
+
+        @Override
+        public void afterTextChanged(
+                android.text.Editable s
+        ) {
+        }
+    }
+
+    private static class GradientHelper {
+
+        static GradientDrawable roundedBackground(
+                int color,
+                float radius
+        ) {
+
+            GradientDrawable drawable =
+                    new GradientDrawable();
+
+            drawable.setColor(color);
+            drawable.setCornerRadius(radius);
+
+            return drawable;
+        }
+    }
+
+    // ============================================================
+    // DARK MODE COLORS
+    // ============================================================
+
+    private int backgroundColor() {
+        return darkMode ? Color.rgb(18, 18, 20) : Color.WHITE;
+    }
+
+    private int primaryTextColor() {
+        return darkMode ? Color.WHITE : Color.BLACK;
+    }
+
+    private int secondaryTextColor() {
+        return darkMode ? Color.rgb(190, 190, 195) : Color.DKGRAY;
+    }
+
+    private int surfaceColor() {
+        return darkMode ? Color.rgb(30, 30, 33) : Color.rgb(245, 245, 247);
+    }
+
+    private int softColor() {
+        return darkMode
+                ? Color.rgb(45, 45, 48)
+                : Color.rgb(245, 242, 248);
+    }
+
+    private int dp(int value) {
+        return (int) (
+                value
+                        * getResources()
+                                .getDisplayMetrics()
+                                .density
+                        + 0.5f
+        );
+    }
+
+
+    // ============================================================
+    // SETTINGS + PASSWORD LOCK — QNIN DARK UI
+    // ============================================================
+
+    private static final int QNIN_BG = Color.rgb(4, 5, 12);
+    private static final int QNIN_CARD = Color.rgb(12, 13, 27);
+    private static final int QNIN_INPUT = Color.rgb(20, 21, 39);
+    private static final int QNIN_PURPLE = Color.rgb(117, 45, 255);
+    private static final int QNIN_PURPLE_2 = Color.rgb(154, 82, 255);
+    private static final int QNIN_TEXT = Color.rgb(245, 242, 255);
+    private static final int QNIN_MUTED = Color.rgb(174, 169, 211);
+    private static final int QNIN_LINE = Color.rgb(45, 42, 70);
+
+    private boolean isPasswordEnabled() {
+        String password = prefs.getString("password", "");
+        return password != null && !password.isEmpty();
+    }
+
+    private GradientDrawable qninGradient(int start, int end, float radius) {
+        GradientDrawable d = new GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                new int[]{start, end}
+        );
+        d.setCornerRadius(radius);
+        return d;
+    }
+
+    private GradientDrawable qninFill(int color, float radius) {
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadius(radius);
+        return d;
+    }
+
+    private TextView qninText(
+            String text,
+            float size,
+            int color,
+            boolean bold
+    ) {
+        TextView v = new TextView(this);
+        v.setText(text);
+        v.setTextSize(size);
+        v.setTextColor(color);
+        v.setGravity(Gravity.CENTER_VERTICAL);
+        if (bold) {
+            v.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        }
+        return v;
+    }
+
+    private TextView qninButton(
+            String text,
+            boolean filled
+    ) {
+        TextView v = qninText(
+                text,
+                15,
+                filled ? Color.WHITE : QNIN_MUTED,
+                true
+        );
+        v.setGravity(Gravity.CENTER);
+        v.setAllCaps(false);
+        v.setClickable(true);
+        v.setFocusable(true);
+        v.setPadding(dp(18), dp(12), dp(18), dp(12));
+        v.setBackground(
+                filled
+                        ? qninGradient(QNIN_PURPLE, QNIN_PURPLE_2, dp(15))
+                        : qninFill(Color.TRANSPARENT, dp(15))
+        );
+        if (filled) {
+            v.setElevation(dp(5));
+        }
+        addPressAnimation(v);
+        return v;
+    }
+
+    private void addPressAnimation(final View v) {
+        v.setOnTouchListener((view, event) -> {
+            switch (event.getActionMasked()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    view.animate()
+                            .scaleX(0.97f)
+                            .scaleY(0.97f)
+                            .setDuration(70)
+                            .start();
+                    break;
+                case android.view.MotionEvent.ACTION_UP:
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    view.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(120)
+                            .setInterpolator(new android.view.animation.OvershootInterpolator(1.4f))
+                            .start();
+                    break;
+            }
+            return false;
+        });
+    }
+
+    private LinearLayout qninDialogCard() {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(18), dp(18), dp(18), dp(18));
+        card.setBackground(
+                qninGradient(
+                        Color.rgb(15, 15, 31),
+                        Color.rgb(8, 9, 20),
+                        dp(18)
+                )
+        );
+        card.setElevation(dp(12));
+        return card;
+    }
+
+    private void configureDialogWindow(android.app.Dialog dialog, boolean fullScreen) {
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        android.view.WindowManager.LayoutParams lp =
+                dialog.getWindow().getAttributes();
+        lp.dimAmount = fullScreen ? 0f : 0.68f;
+        dialog.getWindow().setAttributes(lp);
+
+        if (fullScreen) {
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            );
+
+            // Keep the password field visible when the keyboard opens.
+            dialog.getWindow().setSoftInputMode(
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+                            | android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+            );
+        } else {
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+
+        final View decor = dialog.getWindow().getDecorView();
+        decor.setAlpha(0f);
+        decor.setScaleX(0.985f);
+        decor.setScaleY(0.985f);
+        decor.post(() -> decor.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(220)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start());
+    }
+
+    private TextView addDialogTitle(
+            LinearLayout card,
+            String title,
+            String subtitle
+    ) {
+        TextView t = qninText(title, 24, QNIN_TEXT, true);
+        t.setGravity(Gravity.CENTER);
+        card.addView(
+                t,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+        );
+
+        if (subtitle != null && !subtitle.isEmpty()) {
+            TextView s = qninText(subtitle, 14, QNIN_MUTED, false);
+            s.setGravity(Gravity.CENTER);
+            s.setPadding(dp(8), dp(6), dp(8), dp(4));
+            card.addView(
+                    s,
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+            );
+        }
+        return t;
+    }
+
+    private FrameLayout iconHolder(String type, int size) {
+        FrameLayout holder = new FrameLayout(this);
+        holder.setBackground(
+                qninGradient(
+                        Color.rgb(38, 19, 82),
+                        Color.rgb(87, 39, 173),
+                        dp(size / 2)
+                )
+        );
+        holder.setElevation(dp(7));
+
+        NeonIconView icon = new NeonIconView(this, type);
+        holder.addView(
+                icon,
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        return holder;
+    }
+
+    private FrameLayout addHeroIcon(LinearLayout card, String type) {
+        FrameLayout holder = iconHolder(type, 72);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(72), dp(72));
+        p.gravity = Gravity.CENTER_HORIZONTAL;
+        p.setMargins(0, 0, 0, dp(12));
+        card.addView(holder, p);
+        return holder;
+    }
+
+    private EditText qninPasswordInput(String hint) {
+        LinearLayout wrap = new LinearLayout(this);
+        wrap.setOrientation(LinearLayout.HORIZONTAL);
+
+        EditText input = new EditText(this);
+        input.setHint(hint);
+        input.setHintTextColor(QNIN_MUTED);
+        input.setTextColor(Color.WHITE);
+        input.setTextSize(14);
+        input.setSingleLine(true);
+        input.setPadding(0, 0, dp(8), 0);
+        input.setInputType(
+                android.text.InputType.TYPE_CLASS_TEXT
+                        | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        );
+        input.setBackgroundColor(Color.TRANSPARENT);
+
+        FrameLayout eye = iconHolder("eye", 40);
+        eye.setBackgroundColor(Color.TRANSPARENT);
+        eye.setElevation(0);
+        eye.setOnClickListener(v -> {
+            int pos = input.getSelectionStart();
+            int type = input.getInputType();
+            boolean hidden = (type & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0;
+            input.setInputType(
+                    android.text.InputType.TYPE_CLASS_TEXT
+                            | (hidden
+                            ? android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                            : android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            );
+            input.setSelection(Math.max(0, pos));
+        });
+
+        wrap.addView(
+                input,
+                new LinearLayout.LayoutParams(0, dp(50), 1)
+        );
+        wrap.addView(
+                eye,
+                new LinearLayout.LayoutParams(dp(40), dp(50))
+        );
+        wrap.setGravity(Gravity.CENTER_VERTICAL);
+        wrap.setPadding(dp(14), 0, dp(6), 0);
+        wrap.setBackground(qninFill(QNIN_INPUT, dp(14)));
+        return input;
+    }
+
+    private LinearLayout passwordField(
+            LinearLayout parent,
+            String hint,
+            ArrayList<EditText> outputs
+    ) {
+        LinearLayout wrap = new LinearLayout(this);
+        wrap.setOrientation(LinearLayout.HORIZONTAL);
+        wrap.setGravity(Gravity.CENTER_VERTICAL);
+        wrap.setPadding(dp(12), 0, dp(6), 0);
+        wrap.setBackground(qninFill(QNIN_INPUT, dp(14)));
+
+        FrameLayout lock = iconHolder("lockSmall", 36);
+        lock.setBackgroundColor(Color.TRANSPARENT);
+        lock.setElevation(0);
+        wrap.addView(lock, new LinearLayout.LayoutParams(dp(34), dp(50)));
+
+        EditText input = new EditText(this);
+        input.setHint(hint);
+        input.setHintTextColor(QNIN_MUTED);
+        input.setTextColor(Color.WHITE);
+        input.setTextSize(14);
+        input.setSingleLine(true);
+        input.setPadding(dp(4), 0, dp(4), 0);
+        input.setInputType(
+                android.text.InputType.TYPE_CLASS_TEXT
+                        | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        );
+        input.setBackgroundColor(Color.TRANSPARENT);
+
+        TextView eye = qninText("◉", 17, QNIN_MUTED, false);
+        eye.setGravity(Gravity.CENTER);
+        eye.setPadding(dp(8), 0, dp(8), 0);
+        eye.setClickable(true);
+        eye.setOnClickListener(v -> {
+            int pos = input.getSelectionStart();
+            boolean hidden = (input.getInputType()
+                    & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0;
+            input.setInputType(
+                    android.text.InputType.TYPE_CLASS_TEXT
+                            | (hidden
+                            ? android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                            : android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            );
+            input.setSelection(Math.max(0, pos));
+        });
+
+        wrap.addView(input, new LinearLayout.LayoutParams(0, dp(50), 1));
+        wrap.addView(eye, new LinearLayout.LayoutParams(dp(36), dp(50)));
+
+        LinearLayout.LayoutParams wp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(50)
+        );
+        wp.setMargins(0, dp(8), 0, 0);
+        parent.addView(wrap, wp);
+        outputs.add(input);
+        return wrap;
+    }
+
+    private TextView qninHintRow(LinearLayout card, String text) {
+        TextView row = qninText("✓   " + text, 12, QNIN_MUTED, false);
+        row.setPadding(dp(8), dp(10), dp(8), dp(4));
+        card.addView(row);
+        return row;
+    }
+
+    private void showPasswordSettings() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+        LinearLayout card = qninDialogCard();
+        card.setPadding(dp(24), dp(24), dp(24), dp(20));
+
+        addHeroIcon(card, isPasswordEnabled() ? "lock" : "lock");
+        addDialogTitle(
+                card,
+                "Password lock",
+                isPasswordEnabled()
+                        ? "Your notes are protected."
+                        : "Protect your notes with a password."
+        );
+
+        if (!isPasswordEnabled()) {
+            TextView enable = qninButton("ENABLE", true);
+            LinearLayout.LayoutParams ep = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(50)
+            );
+            ep.setMargins(0, dp(20), 0, 0);
+            card.addView(enable, ep);
+            enable.setOnClickListener(v -> {
+                dialog.dismiss();
+                showCreatePasswordDialog();
+            });
+        } else {
+            TextView change = qninButton("Change password", false);
+            TextView disable = qninButton("Disable password", false);
+
+            LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(52)
+            );
+            rp.setMargins(0, dp(14), 0, 0);
+            card.addView(change, rp);
+            card.addView(disable, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(52)
+            ));
+
+            change.setOnClickListener(v -> {
+                dialog.dismiss();
+                showChangePasswordDialog();
+            });
+            disable.setOnClickListener(v -> {
+                dialog.dismiss();
+                showDisablePasswordDialog();
+            });
+        }
+
+        TextView cancel = qninButton("CANCEL", false);
+        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(48)
+        );
+        cp.setMargins(0, dp(8), 0, 0);
+        card.addView(cancel, cp);
+        cancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.setContentView(card);
+        dialog.show();
+        configureDialogWindow(dialog, false);
+    }
+
+    private void showCreatePasswordDialog() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+        LinearLayout card = qninDialogCard();
+        addHeroIcon(card, "lock");
+        addDialogTitle(
+                card,
+                "Password lock",
+                "Create a password to protect your notes."
+        );
+
+        ArrayList<EditText> fields = new ArrayList<>();
+        passwordField(card, "Password", fields);
+        passwordField(card, "Confirm password", fields);
+        qninHintRow(card, "Must be at least 4 characters.");
+
+        LinearLayout actions = new LinearLayout(this);
+        actions.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+        TextView cancel = qninButton("CANCEL", false);
+        TextView enable = qninButton("ENABLE", true);
+        actions.addView(cancel, new LinearLayout.LayoutParams(dp(110), dp(52)));
+        actions.addView(enable, new LinearLayout.LayoutParams(dp(130), dp(52)));
+        LinearLayout.LayoutParams ap = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(58)
+        );
+        ap.setMargins(0, dp(14), 0, 0);
+        card.addView(actions, ap);
+
+        cancel.setOnClickListener(v -> dialog.dismiss());
+        enable.setOnClickListener(v -> {
+            String p1 = fields.get(0).getText().toString();
+            String p2 = fields.get(1).getText().toString();
+            if (p1.length() < 4) {
+                fields.get(0).setError("At least 4 characters");
+                return;
+            }
+            if (!p1.equals(p2)) {
+                fields.get(1).setError("Passwords do not match");
+                return;
+            }
+            savePassword(p1);
+            appUnlocked = true;
+            dialog.dismiss();
+            showMainScreen();
+        });
+
+        dialog.setContentView(card);
+        dialog.show();
+        configureDialogWindow(dialog, false);
+    }
+
+    private void showChangePasswordDialog() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+        LinearLayout card = qninDialogCard();
+        addHeroIcon(card, "swap");
+        addDialogTitle(
+                card,
+                "Change password",
+                "Enter your current password to change it."
+        );
+
+        ArrayList<EditText> fields = new ArrayList<>();
+        passwordField(card, "Current password", fields);
+        passwordField(card, "New password", fields);
+        passwordField(card, "Confirm new password", fields);
+
+        LinearLayout actions = new LinearLayout(this);
+        actions.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+        TextView cancel = qninButton("CANCEL", false);
+        TextView change = qninButton("CHANGE", true);
+        actions.addView(cancel, new LinearLayout.LayoutParams(dp(110), dp(52)));
+        actions.addView(change, new LinearLayout.LayoutParams(dp(130), dp(52)));
+        LinearLayout.LayoutParams ap = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(58)
+        );
+        ap.setMargins(0, dp(14), 0, 0);
+        card.addView(actions, ap);
+
+        cancel.setOnClickListener(v -> dialog.dismiss());
+        change.setOnClickListener(v -> {
+            String old = fields.get(0).getText().toString();
+            String newer = fields.get(1).getText().toString();
+            String confirm = fields.get(2).getText().toString();
+            if (!verifyPassword(old)) {
+                fields.get(0).setError("Incorrect password");
+                return;
+            }
+            if (newer.length() < 4) {
+                fields.get(1).setError("At least 4 characters");
+                return;
+            }
+            if (!newer.equals(confirm)) {
+                fields.get(2).setError("Passwords do not match");
+                return;
+            }
+            savePassword(newer);
+            dialog.dismiss();
+        });
+
+        dialog.setContentView(card);
+        dialog.show();
+        configureDialogWindow(dialog, false);
+    }
+
+    private void showDisablePasswordDialog() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+        LinearLayout card = qninDialogCard();
+        addHeroIcon(card, "shield");
+        addDialogTitle(
+                card,
+                "Disable password",
+                "Enter your current password to disable protection."
+        );
+
+        ArrayList<EditText> fields = new ArrayList<>();
+        passwordField(card, "Current password", fields);
+
+        View divider = new View(this);
+        divider.setBackgroundColor(QNIN_LINE);
+        LinearLayout.LayoutParams dp1 = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(1)
+        );
+        dp1.setMargins(0, dp(16), 0, dp(4));
+        card.addView(divider, dp1);
+
+        LinearLayout actions = new LinearLayout(this);
+        actions.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+        TextView cancel = qninButton("CANCEL", false);
+        TextView disable = qninButton("DISABLE", true);
+        actions.addView(cancel, new LinearLayout.LayoutParams(dp(110), dp(52)));
+        actions.addView(disable, new LinearLayout.LayoutParams(dp(130), dp(52)));
+        card.addView(actions, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(58)
+        ));
+
+        cancel.setOnClickListener(v -> dialog.dismiss());
+        disable.setOnClickListener(v -> {
+            String entered = fields.get(0).getText().toString();
+            if (!verifyPassword(entered)) {
+                fields.get(0).setError("Incorrect password");
+                return;
+            }
+            prefs.edit().remove("password").apply();
+            appUnlocked = true;
+            dialog.dismiss();
+        });
+
+        dialog.setContentView(card);
+        dialog.show();
+        configureDialogWindow(dialog, false);
+    }
+
+    private void showPasswordUnlockDialog() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+
+        boolean light = !darkMode;
+
+        int bg = light ? Color.rgb(250, 248, 255) : Color.rgb(7, 7, 18);
+        int text = light ? Color.rgb(48, 31, 105) : Color.WHITE;
+        int muted = light ? Color.rgb(105, 103, 145) : Color.rgb(205, 198, 235);
+        int purple = Color.rgb(103, 50, 220);
+        int purple2 = Color.rgb(156, 74, 255);
+
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(bg);
+
+        // Soft decorative background shapes.
+        View topShape = new View(this);
+        GradientDrawable topBg = new GradientDrawable();
+        topBg.setShape(GradientDrawable.OVAL);
+        topBg.setColor(light
+                ? Color.rgb(239, 231, 255)
+                : Color.rgb(31, 13, 70));
+        topShape.setBackground(topBg);
+
+        FrameLayout.LayoutParams tsp =
+                new FrameLayout.LayoutParams(dp(330), dp(250));
+        tsp.gravity = Gravity.TOP | Gravity.START;
+        tsp.leftMargin = dp(-130);
+        tsp.topMargin = dp(-115);
+        root.addView(topShape, tsp);
+
+        View bottomShape = new View(this);
+        GradientDrawable bottomBg = new GradientDrawable();
+        bottomBg.setShape(GradientDrawable.OVAL);
+        bottomBg.setColor(light
+                ? Color.rgb(244, 237, 255)
+                : Color.rgb(28, 12, 62));
+        bottomShape.setBackground(bottomBg);
+
+        FrameLayout.LayoutParams bsp =
+                new FrameLayout.LayoutParams(dp(330), dp(220));
+        bsp.gravity = Gravity.BOTTOM | Gravity.END;
+        bsp.rightMargin = dp(-130);
+        bsp.bottomMargin = dp(-95);
+        root.addView(bottomShape, bsp);
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+        content.setPadding(dp(26), dp(28), dp(26), dp(28));
+
+        // Lock illustration with layered purple glow.
+        FrameLayout illustration = new FrameLayout(this);
+
+        View ring1 = new View(this);
+        GradientDrawable r1 = new GradientDrawable();
+        r1.setShape(GradientDrawable.OVAL);
+        r1.setColor(light
+                ? Color.rgb(241, 232, 255)
+                : Color.rgb(31, 12, 72));
+        ring1.setBackground(r1);
+        illustration.addView(ring1, new FrameLayout.LayoutParams(dp(178), dp(178),
+                Gravity.CENTER));
+
+        View ring2 = new View(this);
+        GradientDrawable r2 = new GradientDrawable();
+        r2.setShape(GradientDrawable.OVAL);
+        r2.setColor(light
+                ? Color.rgb(232, 216, 255)
+                : Color.rgb(47, 18, 105));
+        ring2.setAlpha(0.9f);
+        ring2.setBackground(r2);
+        illustration.addView(ring2, new FrameLayout.LayoutParams(dp(132), dp(132),
+                Gravity.CENTER));
+
+        FrameLayout badge = new FrameLayout(this);
+        GradientDrawable badgeBg = new GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                new int[]{purple, purple2});
+        badgeBg.setCornerRadius(dp(28));
+        badge.setBackground(badgeBg);
+
+        FrameLayout.LayoutParams badgeParams =
+                new FrameLayout.LayoutParams(dp(94), dp(94), Gravity.CENTER);
+
+        FrameLayout lockIcon = iconHolder("lock", 64);
+        badge.addView(lockIcon, new FrameLayout.LayoutParams(
+                dp(64), dp(64), Gravity.CENTER));
+
+        illustration.addView(badge, badgeParams);
+
+        LinearLayout.LayoutParams illustrationParams =
+                new LinearLayout.LayoutParams(dp(190), dp(190));
+        illustrationParams.setMargins(0, dp(22), 0, dp(12));
+        content.addView(illustration, illustrationParams);
+
+        // Qnin Note branding.
+        LinearLayout brand = new LinearLayout(this);
+        brand.setOrientation(LinearLayout.HORIZONTAL);
+        brand.setGravity(Gravity.CENTER);
+
+        TextView qnin = qninText("Qnin", 28,
+                light ? Color.rgb(65, 31, 150) : Color.WHITE, true);
+        TextView note = qninText(" Note", 28, purple2, true);
+
+        brand.addView(qnin);
+        brand.addView(note);
+
+        content.addView(brand, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(48)));
+
+        TextView sub = qninText(
+                "Enter your password to continue.",
+                14,
+                muted,
+                false);
+        sub.setGravity(Gravity.CENTER);
+
+        LinearLayout.LayoutParams subParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, dp(34));
+        subParams.setMargins(0, dp(2), 0, dp(18));
+        content.addView(sub, subParams);
+
+        // Existing password component — password verification remains unchanged.
+        ArrayList<EditText> fields = new ArrayList<>();
+        passwordField(content, "Password", fields);
+
+        LinearLayout.LayoutParams fieldParams =
+                (LinearLayout.LayoutParams)
+                        content.getChildAt(content.getChildCount() - 1).getLayoutParams();
+        fieldParams.setMargins(0, 0, 0, dp(18));
+
+        TextView unlock = qninButton("UNLOCK", true);
+
+        LinearLayout.LayoutParams unlockParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, dp(58));
+        content.addView(unlock, unlockParams);
+
+        unlock.setOnClickListener(v -> {
+            String entered = fields.get(0).getText().toString();
+
+            if (!verifyPassword(entered)) {
+                fields.get(0).setError("Incorrect password");
+                return;
+            }
+
+            appUnlocked = true;
+            dialog.dismiss();
+            showMainScreen();
+        });
+
+        // Privacy footer.
+        LinearLayout footer = new LinearLayout(this);
+        footer.setOrientation(LinearLayout.VERTICAL);
+        footer.setGravity(Gravity.CENTER);
+
+        LinearLayout footerLine = new LinearLayout(this);
+        footerLine.setGravity(Gravity.CENTER_VERTICAL);
+
+        View lineLeft = new View(this);
+        GradientDrawable lineBg = new GradientDrawable();
+        lineBg.setColor(light
+                ? Color.rgb(190, 163, 255)
+                : Color.rgb(151, 91, 255));
+        lineLeft.setBackground(lineBg);
+
+        View lineRight = new View(this);
+        lineRight.setBackground(lineBg);
+
+        TextView shield = qninText("♢", 23, purple2, true);
+        shield.setGravity(Gravity.CENTER);
+
+        footerLine.addView(lineLeft, new LinearLayout.LayoutParams(
+                0, dp(2), 1f));
+        footerLine.addView(shield, new LinearLayout.LayoutParams(
+                dp(48), dp(30)));
+        footerLine.addView(lineRight, new LinearLayout.LayoutParams(
+                0, dp(2), 1f));
+
+        footer.addView(footerLine, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(30)));
+
+        TextView privacy = qninText(
+                "Your Notes. Your Privacy.",
+                12,
+                muted,
+                false);
+        privacy.setGravity(Gravity.CENTER);
+
+        footer.addView(privacy, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(28)));
+
+        LinearLayout.LayoutParams footerParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, dp(70));
+        footerParams.setMargins(dp(8), dp(24), dp(8), 0);
+        content.addView(footer, footerParams);
+
+        FrameLayout.LayoutParams contentParams =
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+        contentParams.gravity = Gravity.CENTER;
+
+        root.addView(content, contentParams);
+        root.bringChildToFront(content);
+
+        dialog.setContentView(root);
+        dialog.show();
+        configureDialogWindow(dialog, true);
+
+        // Correct system-bar appearance for both themes.
+        android.view.Window window = dialog.getWindow();
+        if (window != null) {
+            window.setStatusBarColor(bg);
+            window.setNavigationBarColor(light
+                    ? Color.rgb(250, 248, 255)
+                    : Color.BLACK);
+
+            int flags = window.getDecorView().getSystemUiVisibility();
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+
+            if (light && android.os.Build.VERSION.SDK_INT >= 26) {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            } else if (android.os.Build.VERSION.SDK_INT >= 26) {
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            }
+
+            window.getDecorView().setSystemUiVisibility(flags);
+        }
+    }
+
+    private void showWelcomeBack() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+        dialog.setCancelable(false);
+
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(QNIN_BG);
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+        content.setPadding(dp(24), dp(30), dp(24), dp(30));
+
+        FrameLayout check = iconHolder("check", 88);
+        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(dp(88), dp(88));
+        cp.setMargins(0, dp(40), 0, dp(24));
+        content.addView(check, cp);
+
+        TextView title = qninText("Welcome back!", 24, QNIN_TEXT, true);
+        title.setGravity(Gravity.CENTER);
+        content.addView(title, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(44)
+        ));
+
+        TextView sub = qninText("You’re all set.", 14, QNIN_MUTED, false);
+        sub.setGravity(Gravity.CENTER);
+        content.addView(sub, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(34)
+        ));
+
+        TextView cont = qninButton("CONTINUE", true);
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(54)
+        );
+        bp.setMargins(0, dp(24), 0, 0);
+        content.addView(cont, bp);
+        cont.setOnClickListener(v -> {
+            dialog.dismiss();
+            showMainScreen();
+        });
+
+        FrameLayout.LayoutParams rp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        rp.gravity = Gravity.CENTER;
+        root.addView(content, rp);
+
+        View wave = new View(this);
+        wave.setBackground(qninGradient(
+                Color.rgb(21, 8, 49),
+                Color.rgb(5, 5, 13),
+                dp(70)
+        ));
+        FrameLayout.LayoutParams wp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(130)
+        );
+        wp.gravity = Gravity.BOTTOM;
+        root.addView(wave, wp);
+        root.bringChildToFront(content);
+
+        dialog.setContentView(root);
+        dialog.show();
+        configureDialogWindow(dialog, true);
+    }
+
+    private void savePassword(String password) {
+        prefs.edit().putString("password", password).apply();
+    }
+
+    private boolean verifyPassword(String password) {
+        String saved = prefs.getString("password", "");
+        return saved.equals(password);
+    }
+
+    private EditText createPasswordInput(String hint) {
+        EditText input = new EditText(this);
+        input.setHint(hint);
+        input.setSingleLine(true);
+        input.setInputType(
+                android.text.InputType.TYPE_CLASS_TEXT
+                        | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        );
+        input.setTextColor(primaryTextColor());
+        input.setHintTextColor(
+                darkMode ? Color.rgb(180, 180, 185) : Color.GRAY
+        );
+        return input;
+    }
+
+    private void showSettings() {
+        final android.app.Dialog dialog = new android.app.Dialog(this);
+
+        LinearLayout card = qninDialogCard();
+        card.setPadding(dp(20), dp(20), dp(20), dp(18));
+
+        TextView title = qninText("Settings", 24, QNIN_TEXT, true);
+        title.setGravity(Gravity.CENTER_VERTICAL);
+        title.setPadding(dp(4), 0, 0, 0);
+        card.addView(title, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(52)
+        ));
+
+        // Dark mode row.
+        LinearLayout darkRow = new LinearLayout(this);
+        darkRow.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout moon = iconHolder("moon", 46);
+        darkRow.addView(moon, new LinearLayout.LayoutParams(dp(46), dp(46)));
+
+        LinearLayout darkText = new LinearLayout(this);
+        darkText.setOrientation(LinearLayout.VERTICAL);
+        TextView dt = qninText("Dark mode", 16, QNIN_TEXT, true);
+        TextView ds = qninText("Switch between light and dark\ntheme.", 12, QNIN_MUTED, false);
+        ds.setLineSpacing(0f, 1.05f);
+        darkText.addView(dt, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, dp(26)
+        ));
+        darkText.addView(ds, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, dp(36)
+        ));
+        LinearLayout.LayoutParams dtp = new LinearLayout.LayoutParams(0, dp(68), 1);
+        dtp.setMargins(dp(12), 0, 0, 0);
+        darkRow.addView(darkText, dtp);
+
+        Switch darkSwitch = new Switch(this);
+        darkSwitch.setChecked(darkMode);
+        darkRow.addView(darkSwitch, new LinearLayout.LayoutParams(dp(58), dp(48)));
+
+        card.addView(darkRow, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(76)
+        ));
+
+        // Password row.
+        LinearLayout passRow = new LinearLayout(this);
+        passRow.setGravity(Gravity.CENTER_VERTICAL);
+        passRow.setPadding(dp(8), dp(6), dp(8), dp(6));
+        passRow.setBackground(qninGradient(
+                Color.rgb(29, 20, 57),
+                Color.rgb(19, 17, 38),
+                dp(14)
+        ));
+        passRow.setClickable(true);
+        addPressAnimation(passRow);
+
+        FrameLayout lock = iconHolder("lockSmall", 46);
+        passRow.addView(lock, new LinearLayout.LayoutParams(dp(46), dp(46)));
+        LinearLayout passText = new LinearLayout(this);
+        passText.setOrientation(LinearLayout.VERTICAL);
+        TextView pt = qninText(
+                isPasswordEnabled() ? "Password lock: On" : "Password lock: Off",
+                16,
+                QNIN_TEXT,
+                true
+        );
+        TextView ps = qninText("Protect your notes with a password.", 12, QNIN_MUTED, false);
+        ps.setLineSpacing(0f, 1.0f);
+        passText.addView(pt, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(27)
+        ));
+        passText.addView(ps, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(38)
+        ));
+        LinearLayout.LayoutParams psp = new LinearLayout.LayoutParams(0, dp(66), 1);
+        psp.setMargins(dp(12), 0, 0, 0);
+        passRow.addView(passText, psp);
+        TextView arrow = qninText("›", 28, QNIN_MUTED, false);
+        arrow.setGravity(Gravity.CENTER);
+        passRow.addView(arrow, new LinearLayout.LayoutParams(dp(30), dp(50)));
+
+        LinearLayout.LayoutParams prp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(86)
+        );
+        prp.setMargins(0, dp(8), 0, 0);
+        card.addView(passRow, prp);
+
+        // App info row.
+        LinearLayout infoRow = new LinearLayout(this);
+        infoRow.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout infoIcon = iconHolder("info", 42);
+        infoIcon.setBackgroundColor(Color.TRANSPARENT);
+        infoRow.addView(infoIcon, new LinearLayout.LayoutParams(dp(42), dp(42)));
+        LinearLayout infoText = new LinearLayout(this);
+        infoText.setOrientation(LinearLayout.VERTICAL);
+        infoText.addView(qninText("App info", 15, QNIN_TEXT, true),
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(24)));
+        infoText.addView(qninText("Version 1.0.3", 12, QNIN_MUTED, false),
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(24)));
+        LinearLayout.LayoutParams itp = new LinearLayout.LayoutParams(0, dp(48), 1);
+        itp.setMargins(dp(12), 0, 0, 0);
+        infoRow.addView(infoText, itp);
+        TextView ia = qninText("›", 28, QNIN_MUTED, false);
+        ia.setGravity(Gravity.CENTER);
+        infoRow.addView(ia, new LinearLayout.LayoutParams(dp(30), dp(48)));
+        card.addView(infoRow, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(62)
+        ));
+
+        View line = new View(this);
+        line.setBackgroundColor(QNIN_LINE);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(1)
+        );
+        lp.setMargins(dp(8), dp(8), dp(8), dp(10));
+        card.addView(line, lp);
+
+        TextView close = qninButton("CLOSE", true);
+        card.addView(close, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(54)
+        ));
+
+        passRow.setOnClickListener(v -> {
+            dialog.dismiss();
+            showPasswordSettings();
+        });
+
+        darkSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            darkMode = isChecked;
+            prefs.edit().putBoolean("dark_mode", darkMode).apply();
+            dialog.dismiss();
+            showMainScreen();
+        });
+
+        close.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.setContentView(card);
+        dialog.show();
+        configureDialogWindow(dialog, false);
+    }
+
+    // Small vector-like icons drawn directly on canvas. This avoids external
+    // icon libraries and keeps the password UI consistent across Android versions.
+    private static class NeonIconView extends View {
+        private final String type;
+        private final android.graphics.Paint paint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+
+        NeonIconView(android.content.Context context, String type) {
+            super(context);
+            this.type = type;
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
+        @Override
+        protected void onDraw(android.graphics.Canvas c) {
+            super.onDraw(c);
+            float w = getWidth();
+            float h = getHeight();
+            float cx = w / 2f;
+            float cy = h / 2f;
+            float r = Math.min(w, h) * .34f;
+
+            paint.setStyle(android.graphics.Paint.Style.STROKE);
+            paint.setStrokeWidth(Math.max(2f, Math.min(w, h) * .055f));
+            paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);
+            paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+            paint.setColor(Color.rgb(206, 181, 255));
+            paint.setShadowLayer(Math.max(4f, r * .28f), 0, 0, Color.rgb(122, 48, 255));
+
+            if (type.equals("lock") || type.equals("lockSmall")) {
+                float bw = r * 1.45f;
+                float bh = r * 1.05f;
+                android.graphics.RectF body = new android.graphics.RectF(
+                        cx - bw / 2f, cy - bh / 2f + r * .18f,
+                        cx + bw / 2f, cy + bh / 2f + r * .18f
+                );
+                c.drawRoundRect(body, r * .18f, r * .18f, paint);
+                android.graphics.RectF shackle = new android.graphics.RectF(
+                        cx - r * .52f, cy - r * .66f,
+                        cx + r * .52f, cy + r * .18f
+                );
+                c.drawArc(shackle, 180, 180, false, paint);
+                paint.setStyle(android.graphics.Paint.Style.FILL);
+                c.drawCircle(cx, cy + r * .23f, r * .11f, paint);
+                c.drawRoundRect(
+                        cx - r * .045f, cy + r * .22f,
+                        cx + r * .045f, cy + r * .54f,
+                        r * .04f, r * .04f, paint
+                );
+            } else if (type.equals("swap")) {
+                c.drawLine(cx - r * .55f, cy - r * .2f, cx + r * .55f, cy - r * .2f, paint);
+                c.drawLine(cx + r * .55f, cy - r * .2f, cx + r * .2f, cy - r * .52f, paint);
+                c.drawLine(cx + r * .55f, cy - r * .2f, cx + r * .2f, cy + r * .12f, paint);
+                c.drawLine(cx + r * .55f, cy + r * .28f, cx - r * .55f, cy + r * .28f, paint);
+                c.drawLine(cx - r * .55f, cy + r * .28f, cx - r * .2f, cy - r * .04f, paint);
+                c.drawLine(cx - r * .55f, cy + r * .28f, cx - r * .2f, cy + r * .6f, paint);
+            } else if (type.equals("shield")) {
+                android.graphics.Path path = new android.graphics.Path();
+                path.moveTo(cx, cy - r * .7f);
+                path.lineTo(cx + r * .62f, cy - r * .45f);
+                path.lineTo(cx + r * .52f, cy + r * .3f);
+                path.quadTo(cx, cy + r * .72f, cx - r * .52f, cy + r * .3f);
+                path.lineTo(cx - r * .62f, cy - r * .45f);
+                path.close();
+                c.drawPath(path, paint);
+                c.drawLine(cx, cy - r * .22f, cx, cy + r * .25f, paint);
+                c.drawLine(cx - r * .23f, cy + r * .02f, cx + r * .23f, cy + r * .02f, paint);
+            } else if (type.equals("check")) {
+                paint.setStyle(android.graphics.Paint.Style.FILL);
+                c.drawCircle(cx, cy, r * 1.15f, paint);
+                paint.setStyle(android.graphics.Paint.Style.STROKE);
+                paint.setColor(Color.WHITE);
+                paint.setStrokeWidth(Math.max(3f, r * .16f));
+                android.graphics.Path path = new android.graphics.Path();
+                path.moveTo(cx - r * .48f, cy);
+                path.lineTo(cx - r * .12f, cy + r * .38f);
+                path.lineTo(cx + r * .55f, cy - r * .42f);
+                c.drawPath(path, paint);
+            } else if (type.equals("moon")) {
+                paint.setStyle(android.graphics.Paint.Style.FILL);
+                c.drawCircle(cx, cy, r * .65f, paint);
+                paint.setColor(Color.rgb(43, 24, 86));
+                paint.clearShadowLayer();
+                c.drawCircle(cx + r * .3f, cy - r * .2f, r * .55f, paint);
+            } else if (type.equals("info")) {
+                paint.setStyle(android.graphics.Paint.Style.FILL);
+                c.drawCircle(cx, cy, r * .82f, paint);
+                paint.setColor(Color.rgb(37, 25, 72));
+                paint.setTextAlign(android.graphics.Paint.Align.CENTER);
+                paint.setTypeface(Typeface.DEFAULT_BOLD);
+                paint.setTextSize(r * .9f);
+                c.drawText("i", cx, cy + r * .32f, paint);
+            } else if (type.equals("eye")) {
+                paint.setStyle(android.graphics.Paint.Style.STROKE);
+                android.graphics.RectF eye = new android.graphics.RectF(
+                        cx - r * .72f, cy - r * .42f,
+                        cx + r * .72f, cy + r * .42f
+                );
+                c.drawOval(eye, paint);
+                paint.setStyle(android.graphics.Paint.Style.FILL);
+                c.drawCircle(cx, cy, r * .16f, paint);
+            }
+        }
+    }
+
+}

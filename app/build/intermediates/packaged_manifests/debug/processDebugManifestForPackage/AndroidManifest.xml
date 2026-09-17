@@ -16,6 +16,7 @@
         android:label="Qnin Note"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
+        <activity android:name="com.qnin.note.LockActivity" />
         <activity
             android:name="com.qnin.note.MainActivity"
             android:exported="true"
