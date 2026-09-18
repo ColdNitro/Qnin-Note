@@ -13,6 +13,7 @@ drawable bg_button_purple
 drawable bg_dialog_card
 drawable bg_icon_circle
 drawable bg_input_field
+drawable ic_arrow_back_qnin
 drawable ic_check_circle
 drawable ic_eye
 drawable ic_eye_off

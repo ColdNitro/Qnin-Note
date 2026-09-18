@@ -48,6 +48,10 @@
         "source": "com.qnin.note.app-main-6:/layout/dialog_enable_password.xml"
     },
     {
+        "merged": "com.qnin.note.app-debug-4:/drawable_ic_arrow_back_qnin.xml.flat",
+        "source": "com.qnin.note.app-main-6:/drawable/ic_arrow_back_qnin.xml"
+    },
+    {
         "merged": "com.qnin.note.app-debug-4:/mipmap-anydpi-v26_qnin_note_icon.xml.flat",
         "source": "com.qnin.note.app-main-6:/mipmap-anydpi-v26/qnin_note_icon.xml"
     },

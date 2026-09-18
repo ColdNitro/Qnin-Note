@@ -408,6 +408,7 @@ settingsButton.setColorFilter(
                 : LIGHT_PURPLE
 );
 
+        background.setCornerRadius(dp(22));
         card.setBackground(background);
         card.setClickable(true);
 
@@ -496,24 +497,21 @@ settingsButton.setColorFilter(
                 dp(10)
         );
 
-        // Modern circular back button.
-        TextView back = new TextView(this);
-        back.setText("←");
-        back.setTextSize(27);
-        back.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        back.setTextColor(PURPLE);
-        back.setGravity(Gravity.CENTER);
-        back.setClickable(true);
-        back.setFocusable(true);
+        // Modern circular back button with a properly centered vector arrow.
+        ImageButton back = new ImageButton(this);
+        back.setImageResource(R.drawable.ic_arrow_back_qnin);
+        back.setScaleType(ImageView.ScaleType.CENTER);
+        back.setPadding(0, 0, 0, 0);
 
         GradientDrawable backBackground =
                 new GradientDrawable();
-
         backBackground.setColor(softColor());
         backBackground.setCornerRadius(dp(24));
 
         back.setBackground(backBackground);
         back.setElevation(dp(2));
+        back.setClickable(true);
+        back.setFocusable(true);
 
         back.setOnClickListener(v -> showMainScreen());
 
