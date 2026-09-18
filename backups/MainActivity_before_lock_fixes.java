@@ -1848,38 +1848,67 @@ settingsButton.setColorFilter(
         dialog.show();
         configureDialogWindow(dialog, true);
 
+        // Keep the password controls visible above the keyboard.
+        android.view.Window dialogWindow = dialog.getWindow();
+        if (dialogWindow != null) {
+            dialogWindow.setSoftInputMode(
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+            );
+        }
 
-        // Lock-screen system bars.
+        root.getViewTreeObserver().addOnGlobalLayoutListener(
+                new android.view.ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        android.graphics.Rect visible =
+                                new android.graphics.Rect();
+                        root.getWindowVisibleDisplayFrame(visible);
+
+                        int totalHeight = root.getRootView().getHeight();
+                        int visibleHeight = visible.height();
+                        int keyboardHeight = totalHeight - visibleHeight;
+
+                        boolean keyboardOpen =
+                                keyboardHeight > dp(180);
+
+                        content.animate()
+                                .translationY(keyboardOpen ? -dp(220) : 0)
+                                .setDuration(120)
+                                .start();
+                    }
+                }
+        );
+
+        // Correct system-bar appearance for both themes.
         android.view.Window window = dialog.getWindow();
-
         if (window != null) {
+            // Android 15 edge-to-edge: draw the lock-screen background
+            // underneath the transparent status bar.
             window.addFlags(
                     android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
             );
 
-            if (android.os.Build.VERSION.SDK_INT >= 30) {
-                window.setDecorFitsSystemWindows(false);
-            }
-
             window.setStatusBarColor(Color.TRANSPARENT);
-            window.setNavigationBarColor(Color.TRANSPARENT);
+            window.setNavigationBarColor(
+                    light ? Color.rgb(250, 248, 255) : Color.BLACK
+            );
+
+            // Make the dialog/decor background match the lock screen,
+            // including the area behind the status bar.
+            window.getDecorView().setBackgroundColor(bg);
 
             int flags = window.getDecorView().getSystemUiVisibility();
 
-            flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-
             if (light) {
                 flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-
-                if (android.os.Build.VERSION.SDK_INT >= 26) {
-                    flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                }
             } else {
                 flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            }
 
-                if (android.os.Build.VERSION.SDK_INT >= 26) {
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                if (light) {
+                    flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                } else {
                     flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
                 }
             }
@@ -1908,29 +1937,6 @@ settingsButton.setColorFilter(
                     );
                 }
             }
-
-            window.setSoftInputMode(
-                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-                            | android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-            );
-        }
-
-        // Move the lock screen upward when the keyboard appears.
-        if (android.os.Build.VERSION.SDK_INT >= 23) {
-            root.setOnApplyWindowInsetsListener((v, insets) -> {
-                int keyboardHeight =
-                        insets.getSystemWindowInsetBottom();
-
-                if (keyboardHeight > dp(100)) {
-                    content.setTranslationY(-dp(220));
-                } else {
-                    content.setTranslationY(0);
-                }
-
-                return insets;
-            });
-
-            root.requestApplyInsets();
         }
     }
 
