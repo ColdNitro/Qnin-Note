@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: app/src/main/java/com/qnin/note/MainActivity.java
+@@
+     private void showSettings() {
+         final android.app.Dialog dialog = new android.app.Dialog(this);
+ 
+-        LinearLayout card = qninDialogCard();
++        int settingsBgStart = darkMode ? Color.rgb(15, 15, 31) : Color.WHITE;
++        int settingsBgEnd = darkMode ? Color.rgb(8, 9, 20) : Color.rgb(249, 248, 252);
++        int settingsText = darkMode ? QNIN_TEXT : Color.rgb(25, 24, 30);
++        int settingsMuted = darkMode ? QNIN_MUTED : Color.rgb(95, 91, 105);
++        int settingsLine = darkMode ? QNIN_LINE : Color.rgb(220, 218, 226);
++
++        LinearLayout card = new LinearLayout(this);
++        card.setOrientation(LinearLayout.VERTICAL);
++        card.setPadding(dp(20), dp(20), dp(20), dp(18));
++        card.setBackground(qninGradient(settingsBgStart, settingsBgEnd, dp(28)));
++        card.setElevation(dp(12));
+ 
+-        TextView title = qninText("Settings", 24, QNIN_TEXT, true);
++        TextView title = qninText("Settings", 24, settingsText, true);
+@@
+-        TextView dt = qninText("Dark mode", 16, QNIN_TEXT, true);
+-        TextView ds = qninText("Switch between light and dark\ntheme.", 12, QNIN_MUTED, false);
++        TextView dt = qninText("Dark mode", 16, settingsText, true);
++        TextView ds = qninText("Switch between light and dark\ntheme.", 12, settingsMuted, false);
+@@
+-        passRow.setBackground(qninGradient(
+-                Color.rgb(29, 20, 57),
+-                Color.rgb(19, 17, 38),
++        passRow.setBackground(qninGradient(
++                darkMode ? Color.rgb(29, 20, 57) : Color.rgb(246, 243, 251),
++                darkMode ? Color.rgb(19, 17, 38) : Color.rgb(239, 236, 247),
+                 dp(14)
+         ));
+@@
+-                QNIN_TEXT,
++                settingsText,
+@@
+-        TextView ps = qninText("Protect your notes with a password.", 12, QNIN_MUTED, false);
++        TextView ps = qninText("Protect your notes with a password.", 12, settingsMuted, false);
+@@
+-        TextView arrow = qninText("›", 28, QNIN_MUTED, false);
++        TextView arrow = qninText("›", 28, settingsMuted, false);
+@@
+-        infoText.addView(qninText("App info", 15, QNIN_TEXT, true),
++        infoText.addView(qninText("App info", 15, settingsText, true),
+@@
+-        infoText.addView(qninText("Version 1.0.3", 12, QNIN_MUTED, false),
++        infoText.addView(qninText("Version 1.0.4", 12, settingsMuted, false),
+@@
+-        TextView ia = qninText("›", 28, QNIN_MUTED, false);
++        TextView ia = qninText("›", 28, settingsMuted, false);
+@@
+-        line.setBackgroundColor(QNIN_LINE);
++        line.setBackgroundColor(settingsLine);
+*** End Patch

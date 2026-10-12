@@ -9,7 +9,7 @@
     <color name="surface_input">#1E1930</color>
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#A79FBD</color>
-    <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#6750A4</item>
         <item name="android:navigationBarColor">#2D2D2D</item>
